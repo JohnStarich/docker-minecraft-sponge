@@ -1,6 +1,6 @@
 # Sponge Minecraft Server for Docker
 
-Sponge Minecraft server in a container.
+[Sponge](https://www.spongepowered.org) Minecraft server in a container.
 
 ## Running
 
