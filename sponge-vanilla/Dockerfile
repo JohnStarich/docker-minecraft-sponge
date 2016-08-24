@@ -1,0 +1,14 @@
+# Sponge Powered Minecraft Modded Server
+FROM java:8
+MAINTAINER John Starich <johnstarich@johnstarich.com>
+
+ENV MINECRAFT_PORT 25565
+ENV SPONGE_VERSION 1.10.2-5.0.0-BETA-101
+
+VOLUME ["/sponge"]
+WORKDIR /sponge
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+COPY ./entrypoint.sh /entrypoint.sh
+
