@@ -2,13 +2,19 @@
 FROM java:8
 MAINTAINER John Starich <johnstarich@johnstarich.com>
 
+# Set default environment variables
 ENV MINECRAFT_PORT 25565
 ENV SPONGE_VERSION 1.10.2-5.0.0-BETA-101
 
+# Expose default port (any other port require manual publishing)
+EXPOSE 25565
+EXPOSE 25565/udp
+
+# Add persistent storage for the sponge server
 VOLUME ["/sponge"]
+
 WORKDIR /sponge
 
 ENTRYPOINT ["/entrypoint.sh"]
-
 COPY ./entrypoint.sh /entrypoint.sh
 

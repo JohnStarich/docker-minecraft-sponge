@@ -7,7 +7,7 @@
 To run this container, use the following command.
 
 ```bash
-docker run -d -i -t --name sponge -p 25565:25565 -e SPONGE_VERSION=1.10.2-5.0.0-BETA-101 johnstarich/sponge-vanilla -Xmx1G
+docker run -d -i -t --name sponge -p 25565:25565 -p 25565:25565/udp -e SPONGE_VERSION=1.10.2-5.0.0-BETA-101 johnstarich/sponge-vanilla -Xmx1G
 ```
 
 This command publishes the default minecraft port and sets the desired Sponge version. The last argument `-Xmx1G` is saying that Minecraft can only use 1 gigabyte of memory (RAM), adjust this as you see fit. Feel free to add more arguments, these arguments are appended to the `java` command for the server.
@@ -15,7 +15,7 @@ This command publishes the default minecraft port and sets the desired Sponge ve
 The following command adds a volume mount from the host computer into the container so the Minecraft world can be stored there.
 
 ```bash
-docker run -d -i -t --name sponge -p 25565:25565 -e SPONGE_VERSION=1.10.2-5.0.0-BETA-101 -v /dir/on/host/for/sponge:/sponge johnstarich/sponge-vanilla -Xmx1G
+docker run -d -i -t --name sponge -p 25565:25565 -p 25565:25565/udp -e SPONGE_VERSION=1.10.2-5.0.0-BETA-101 -v /dir/on/host/for/sponge:/sponge johnstarich/sponge-vanilla -Xmx1G
 ```
 
 ## Connecting to Console
