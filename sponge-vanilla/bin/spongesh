@@ -39,6 +39,18 @@ if [ ! -z "$@" ]; then
 fi
 
 # Read standard input line-by-line and relay them to the server
+if [ -t 1 ]; then
+    # If standard output is a terminal, print welcome message
+    echo >&2 '# Welcome to SpongeSH!
+# To restart the server, run `stop`.
+# To shutdown the server, run `shutdown`.
+# For more command, run `help`.
+'
+fi
+if [ -t 0 ]; then
+    # If standard input is a terminal, kill background processes too
+    trap 'kill -SIGINT %tail; exit' SIGINT
+fi
 tail -f "$log" &
 while read -er line; do
     process_input "$line"
