@@ -45,8 +45,9 @@ function verify_installed() {
 
 function trap_sponge_shutdown() {
     SPONGE_RUNNING=false
-    echo 'stop' > server_fifo
-    wait %java
+    sponge_cmd say Shutting down...
+    sponge_cmd stop
+    wait $SPONGE_PID
     return 0
 }
 
@@ -55,24 +56,38 @@ function prepare_startup() {
         mkfifo server_fifo
     fi
     trap trap_sponge_shutdown TERM
+    exec 3<>server_fifo
+}
+
+function prepare_shutdown() {
+    exec 3<&-
+}
+
+function sponge_cmd() {
+    echo "$@" >&3
 }
 
 function run_sponge() {
     # Start the sponge server and attach input
-    java $@ -jar /sponge/server.jar < server_fifo &
-    # Attach standard input to the server
-    exec 0> server_fifo
-    wait %java
+    java $@ -jar /sponge/server.jar < server_fifo | tee /var/log/sponge.log &
+    SPONGE_PID=$!
+    wait $SPONGE_PID
 }
 
+# Exit if any step has non-zero exit code
 set -e
+# Enable job control
 set -m
 validate_environment
 set -x
 verify_installed
 prepare_startup
+set +x
+# Continue running Sponge server until explicitly told to shutdown.
 SPONGE_RUNNING=true
 while [[ "$SPONGE_RUNNING" == true ]]; do
+    echo 'Starting Sponge server...'
+    sleep 2
     run_sponge $@
 done
-
+prepare_shutdown
