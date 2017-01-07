@@ -16,5 +16,6 @@ VOLUME ["/sponge"]
 WORKDIR /sponge
 
 ENTRYPOINT ["/entrypoint.sh"]
+CMD ["-Xms256M"]
 COPY ./entrypoint.sh /entrypoint.sh
 

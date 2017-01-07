@@ -31,25 +31,48 @@ function validate_environment() {
 }
 
 function verify_installed() {
-    if [ ! -f /sponge/spongevanilla-${SPONGE_VERSION}.jar ]; then
-        wget -O /sponge/spongevanilla-${SPONGE_VERSION}.jar https://repo.spongepowered.org/maven/org/spongepowered/spongevanilla/${SPONGE_VERSION}/spongevanilla-${SPONGE_VERSION}.jar
+    if [ ! -f "/sponge/spongevanilla-${SPONGE_VERSION}.jar" ]; then
+        wget -O "/sponge/spongevanilla-${SPONGE_VERSION}.jar" "https://repo.spongepowered.org/maven/org/spongepowered/spongevanilla/${SPONGE_VERSION}/spongevanilla-${SPONGE_VERSION}.jar"
         if [ -f /sponge/server.jar ]; then
             rm /sponge/server.jar
         fi
-        ln -s /sponge/spongevanilla-${SPONGE_VERSION}.jar /sponge/server.jar
+        ln -s "/sponge/spongevanilla-${SPONGE_VERSION}.jar" /sponge/server.jar
     fi
     if [ ! -f /sponge/eula.txt ]; then
         echo 'eula=true' > /sponge/eula.txt
     fi
 }
 
-function start_sponge() {
-    java $@ -jar /sponge/server.jar
+function trap_sponge_shutdown() {
+    SPONGE_RUNNING=false
+    echo 'stop' > server_fifo
+    wait %java
+    return 0
+}
+
+function prepare_startup() {
+    if [[ ! -p server_fifo ]]; then
+        mkfifo server_fifo
+    fi
+    trap trap_sponge_shutdown TERM
+}
+
+function run_sponge() {
+    # Start the sponge server and attach input
+    java $@ -jar /sponge/server.jar < server_fifo &
+    # Attach standard input to the server
+    exec 0> server_fifo
+    wait %java
 }
 
 set -e
+set -m
 validate_environment
 set -x
 verify_installed
-start_sponge "$@"
+prepare_startup
+SPONGE_RUNNING=true
+while [[ "$SPONGE_RUNNING" == true ]]; do
+    run_sponge $@
+done
 
