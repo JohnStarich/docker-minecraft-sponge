@@ -30,12 +30,21 @@ set -m
 exec 3<>"$fifo"
 
 # If present, then process CLI arguments, relay output for 2 seconds, and exit
-if [ ! -z "$@" ]; then
+if [[ "$@" != '' ]]; then
     process_input "$@"
     tail -n 0 -f "$log" &
     sleep 2
     kill %tail
     exit
+fi
+# If no CLI arguments are present, but stdin is not a TTY, then error out
+if [ ! -t 0 ]; then
+    echo >&2 'Error: Terminal is non-interactive and no command line arguments were provided.
+Usage:
+    With interactive terminal: `spongesh`
+    Otherwise: `spongesh say hello world`
+'
+    exit 2
 fi
 
 # Read standard input line-by-line and relay them to the server
