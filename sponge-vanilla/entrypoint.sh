@@ -12,7 +12,33 @@ function error() {
     return 1
 }
 
+function ensure_correct_sponge_version() {
+    set -e
+    set -x
+    if [[ "$SPONGE_VERSION" == 'latest' || \
+          "$SPONGE_VERSION" == 'latest-stable' || \
+          "$SPONGE_VERSION" == 'latest-unstable' || \
+          "$SPONGE_VERSION" == 'latest-bleeding' ]]; then
+        local unstable_version='.buildTypes.bleeding.latest.version'
+        local stable_version='.buildTypes.stable.latest.version'
+        local version_api='https://dl-api.spongepowered.org/v1/org.spongepowered/spongevanilla'
+
+        local version_req=$(curl -L "$version_api")
+        local versions=$(jq -r "$unstable_version,$stable_version" <<<$version_req)
+        local versions=$(tr '\n' ' ' <<<$versions)
+        local unstable_v=$(awk '{ print $1 }' <<< $versions)
+        local stable_v=$(awk '{ print $2 }' <<< $versions)
+
+        if [[ "$SPONGE_VERSION" == 'latest' || "$SPONGE_VERSION" == 'latest-stable' ]]; then
+            SPONGE_VERSION=$stable_v
+        else
+            SPONGE_VERSION=$unstable_v
+        fi
+    fi
+}
+
 function validate_environment() {
+    ensure_correct_sponge_version
     local required_vars=(
         MINECRAFT_PORT
         SPONGE_VERSION
