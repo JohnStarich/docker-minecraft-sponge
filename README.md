@@ -2,20 +2,44 @@
 
 [Sponge](https://www.spongepowered.org) Minecraft server in a container.
 
+Built-in features include:
+
+* runs a Sponge server in a Docker container
+* issues a `stop` command when the container is stopped
+* supports multiple console connections using `docker exec`
+* automatically downloads Sponge version specified by environment variable
+* automatic restarts in the event of a server crash or regular `/stop` command
+
 ## Running
 
 To run this container, use the following command.
 
 ```bash
-docker run -d -i -t --name sponge -p 25565:25565 -p 25565:25565/udp -e SPONGE_VERSION=1.10.2-5.0.0-BETA-101 johnstarich/sponge-vanilla -Xmx1G
+docker run -d --name sponge -p 25565:25565 -p 25565:25565/udp -e SPONGE_VERSION=1.10.2-5.0.0-BETA-101 johnstarich/sponge-vanilla
 ```
 
-This command publishes the default minecraft port and sets the desired Sponge version. The last argument `-Xmx1G` is saying that Minecraft can only use 1 gigabyte of memory (RAM), adjust this as you see fit. Feel free to add more arguments, these arguments are appended to the `java` command for the server.
+This command starts a Sponge server and allows connections on port 25565 (the default Minecraft port). If you are running the container on the same IP address as your Minecraft game client, then use the server address `localhost` to connect and play.
+
+Here's a larger example of usage:
+
+```bash
+# [] = optional
+# $SERVER_VERSION could be something like `1.10.2-5.0.0-BETA-101`
+
+docker run --detach \
+    [--name $CONTAINER_NAME] \
+    --publish $SERVER_PORT:25565 \
+    --publish $SERVER_PORT:25565/udp \
+    [--env SPONGE_VERSION=$SERVER_VERSION] \
+    johnstarich/sponge-vanilla [$JAVA_ARG1 [$JAVA_ARG2 ...]]
+```
+
+This command publishes the default Minecraft port and sets the desired Sponge version. The last java arguments could be something like `-Xmx1G`, which instructs Minecraft to only use 1 gigabyte of memory (RAM). Feel free to add more arguments since these arguments are appended to the `java` command for the server.
 
 The following command adds a volume mount from the host computer into the container so the Minecraft world can be stored there.
 
 ```bash
-docker run -d -i -t --name sponge -p 25565:25565 -p 25565:25565/udp -e SPONGE_VERSION=1.10.2-5.0.0-BETA-101 -v /dir/on/host/for/sponge:/sponge johnstarich/sponge-vanilla -Xmx1G
+docker run -d --name sponge -p 25565:25565 -p 25565:25565/udp -e SPONGE_VERSION=1.10.2-5.0.0-BETA-101 -v /dir/on/host/for/sponge:/sponge johnstarich/sponge-vanilla -Xmx1G
 ```
 
 ## Connecting to Console
@@ -23,18 +47,18 @@ docker run -d -i -t --name sponge -p 25565:25565 -p 25565:25565/udp -e SPONGE_VE
 Attaching to the console to run commands is quite useful, especially when setting up for the first time.
 In these cases, use the following command to connect to the server console.
 
-**Note: The container must be run as interactive `-i` and allocate a tty `-t` in order for the attach to work.**
-
 ```bash
-docker attach sponge
+docker exec -it sponge spongesh
 ```
 
-To disconnect press `ctrl-P` then `ctrl-Q`.
-Pressing `ctrl-C` terminates the Minecraft server, so be careful.
+To disconnect, press `ctrl-C`.
+
+Individual commands can also be run from `spongesh`. For example, `docker exec sponge spongesh say hello world`.
 
 ## Stopping the server
 
-Stopping the server is not as simple as stopping the container. Stopping the container will immediately terminate the Minecraft server, potentially corrupting or not saving the world properly.
+Stopping the server can be done by just stopping the container with `docker stop sponge`.
 
-To stop the server correctly, you must attach to the container (described above) and run `stop` in the console.
+However, if the shutdown process takes longer than 10 seconds (the default Docker wait time), then Docker will kill the server without giving it time to shut down properly. This can be solved by extending the shut down time with `docker stop --time=60 sponge` where 60 is the number of seconds before a kill is issued.
 
+The *__best way__* to shutdown the server safely, without risk of corruption, is by running `docker exec sponge spongesh shutdown`. This command will tell the server to shutdown and the server will shut down when it is ready.
