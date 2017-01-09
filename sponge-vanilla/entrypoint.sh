@@ -41,6 +41,12 @@ function verify_installed() {
     if [ ! -f /sponge/eula.txt ]; then
         echo 'eula=true' > /sponge/eula.txt
     fi
+    if [ ! -f /sponge/server.properties ]; then
+        cat > /sponge/server.properties <<EOT
+server-port=$MINECRAFT_PORT
+motd=A Docker-Powered Minecraft Server
+EOT
+    fi
 }
 
 function trap_sponge_shutdown() {
