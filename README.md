@@ -7,7 +7,7 @@ Built-in features include:
 * runs a Sponge server in a Docker container
 * issues a `stop` command when the container is stopped
 * supports multiple console connections using `docker exec`
-* automatically downloads Sponge version specified by environment variable
+* automatically downloads newest or desired Sponge version specified by environment variable
 * automatic restarts in the event of a server crash or regular `/stop` command
 
 ## Running
@@ -15,7 +15,7 @@ Built-in features include:
 To run this container, use the following command.
 
 ```bash
-docker run -d --name sponge -p 25565:25565 -p 25565:25565/udp -e SPONGE_VERSION=1.10.2-5.0.0-BETA-101 johnstarich/sponge-vanilla
+docker run -d --name sponge -p 25565:25565 -p 25565:25565/udp johnstarich/sponge-vanilla
 ```
 
 This command starts a Sponge server and allows connections on port 25565 (the default Minecraft port). If you are running the container on the same IP address as your Minecraft game client, then use the server address `localhost` to connect and play.
@@ -24,7 +24,11 @@ Here's a larger example of usage:
 
 ```bash
 # [] = optional
-# $SERVER_VERSION could be something like `1.10.2-5.0.0-BETA-101`
+# $SERVER_VERSION can be `1.10.2-5.0.0-BETA-101`,
+#   `latest`, `latest-stable`, `latest-bleeding`
+#   where latest and latest stable get the current
+#   stable build of Sponge and bleeding gets the
+#   current beta build of sponge.
 
 docker run --detach \
     [--name $CONTAINER_NAME] \
@@ -36,7 +40,7 @@ docker run --detach \
 
 This command publishes the default Minecraft port and sets the desired Sponge version. The last java arguments could be something like `-Xmx1G`, which instructs Minecraft to only use 1 gigabyte of memory (RAM). Feel free to add more arguments since these arguments are appended to the `java` command for the server.
 
-The following command adds a volume mount from the host computer into the container so the Minecraft world can be stored there.
+The following command adds a volume mount from the host computer into the container so the Minecraft world can be stored there. It also specifies a specific BETA build to use instead of the latest stable release.
 
 ```bash
 docker run -d --name sponge -p 25565:25565 -p 25565:25565/udp -e SPONGE_VERSION=1.10.2-5.0.0-BETA-101 -v /dir/on/host/for/sponge:/sponge johnstarich/sponge-vanilla -Xmx1G
