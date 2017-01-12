@@ -101,7 +101,7 @@ function sponge_cmd() {
 
 function run_sponge() {
     # Start the sponge server and attach input
-    java $@ -jar /sponge/server.jar < server_fifo | tee /var/log/sponge.log &
+    java $@ -jar /sponge/server.jar <&3 | tee /var/log/sponge.log &
     SPONGE_PID=$!
     wait $SPONGE_PID
 }
